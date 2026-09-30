@@ -29,6 +29,7 @@ export default function RosterPage() {
   const [team, setTeam] = useState("");
   const [onlyOwned, setOnlyOwned] = useState(false);
   const [onlyPinned, setOnlyPinned] = useState(false);
+  const [bulk, setBulk] = useState<null | "mark" | "unmark">(null);
 
   const owned = useMemo(() => new Set(profile?.owned ?? []), [profile]);
   const locked = useMemo(() => new Set(profile?.locked ?? []), [profile]);
@@ -60,7 +61,11 @@ export default function RosterPage() {
       locked: p.locked.includes(id) ? p.locked.filter((x) => x !== id) : p.locked.length >= 11 ? p.locked : [...p.locked, id],
     }));
   const setMany = (ids: string[], on: boolean) =>
-    update((p) => ({ ...p, owned: on ? [...new Set([...p.owned, ...ids])] : p.owned.filter((x) => !ids.includes(x)) }));
+    update((p) =>
+      on
+        ? { ...p, owned: [...new Set([...p.owned, ...ids])] }
+        : { ...p, owned: p.owned.filter((x) => !ids.includes(x)), locked: p.locked.filter((x) => !ids.includes(x)) },
+    );
 
   return (
     <div className="space-y-5">
@@ -114,9 +119,47 @@ export default function RosterPage() {
                 </>
               )}
             </span>
-            <button className="ml-auto hover:text-text" onClick={() => setMany(list.map((p) => p.id), true)}>Marcar los mostrados</button>
-            <button className="hover:text-text" onClick={() => setMany(list.map((p) => p.id), false)}>Desmarcar</button>
+            <button className="ml-auto hover:text-text" onClick={() => setBulk("mark")}>Marcar los mostrados</button>
+            <button className="hover:text-text" onClick={() => setBulk("unmark")}>Desmarcar</button>
           </div>
+          {bulk && (() => {
+            // Cuántos cambian de verdad: los que no estaban marcados (o sí, al desmarcar)
+            const affected = list.filter((p) => (bulk === "mark" ? !owned.has(p.id) : owned.has(p.id))).length;
+            return (
+              <div className={`flex flex-wrap items-center gap-3 rounded-lg border p-3 text-sm ${bulk === "unmark" ? "border-bad/50 bg-bad/10" : "border-bolt/50 bg-bolt/10"}`}>
+                <span>
+                  {affected === 0 ? (
+                    <>No hay nada que cambiar: {bulk === "mark" ? "ya tienes marcados todos los que se muestran." : "ninguno de los que se muestran está marcado."}</>
+                  ) : bulk === "mark" ? (
+                    <>
+                      ¿Marcar como tuyos <b>{affected}</b> {affected === 1 ? "jugador más" : "jugadores más"} (todos los que se muestran ahora)?
+                    </>
+                  ) : (
+                    <>
+                      ⚠ ¿Desmarcar <b>{affected}</b> {affected === 1 ? "jugador" : "jugadores"} de tu plantilla? Dejarán de contar para los equipos y se les quita el fijado (su despertar y
+                      3.ª técnica se guardan por si los vuelves a marcar).
+                    </>
+                  )}
+                </span>
+                <div className="ml-auto flex gap-2">
+                  {affected > 0 && (
+                    <button
+                      onClick={() => {
+                        setMany(list.map((p) => p.id), bulk === "mark");
+                        setBulk(null);
+                      }}
+                      className={`rounded-lg px-3 py-1.5 font-semibold ${bulk === "unmark" ? "bg-bad text-white" : "bg-bolt text-bolt-ink"}`}
+                    >
+                      {bulk === "mark" ? `Sí, marcar ${affected}` : `Sí, desmarcar ${affected}`}
+                    </button>
+                  )}
+                  <button onClick={() => setBulk(null)} className="rounded-lg border border-line px-3 py-1.5 hover:text-text">
+                    {affected > 0 ? "Cancelar" : "Cerrar"}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {list.map((p) => {
