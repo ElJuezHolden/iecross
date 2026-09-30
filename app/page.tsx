@@ -28,8 +28,10 @@ export default function RosterPage() {
   const [el, setEl] = useState<Element | "">("");
   const [team, setTeam] = useState("");
   const [onlyOwned, setOnlyOwned] = useState(false);
+  const [onlyPinned, setOnlyPinned] = useState(false);
 
   const owned = useMemo(() => new Set(profile?.owned ?? []), [profile]);
+  const locked = useMemo(() => new Set(profile?.locked ?? []), [profile]);
   const list = useMemo(() => {
     const s = q.trim().toLowerCase();
     return PLAYERS.filter(
@@ -38,9 +40,10 @@ export default function RosterPage() {
         (!el || p.element === el) &&
         (!team || p.team === team) &&
         (!onlyOwned || owned.has(p.id)) &&
+        (!onlyPinned || locked.has(p.id)) &&
         (!s || [p.name, ...p.aliases, p.team, ...p.tags].join(" ").toLowerCase().includes(s)),
     ).sort((a, b) => POSITIONS.indexOf(a.position) - POSITIONS.indexOf(b.position) || b.stars - a.stars || b.stats.power - a.stats.power);
-  }, [q, pos, el, team, onlyOwned, owned]);
+  }, [q, pos, el, team, onlyOwned, owned, onlyPinned, locked]);
 
   if (!profile) return <p className="text-muted">Cargando…</p>;
 
@@ -95,11 +98,21 @@ export default function RosterPage() {
             <label className="flex items-center gap-1.5 text-sm text-muted">
               <input type="checkbox" checked={onlyOwned} onChange={(e) => setOnlyOwned(e.target.checked)} /> Solo los míos
             </label>
+            <label className="flex items-center gap-1.5 text-sm text-muted" title="Los fijados salen obligatoriamente en todos los equipos generados">
+              <input type="checkbox" checked={onlyPinned} onChange={(e) => setOnlyPinned(e.target.checked)} /> Solo fijados 📌
+            </label>
           </div>
           <div className="flex items-center gap-3 text-sm text-muted">
             <span>
               <b className="text-text">{profile.owned.length}</b> de {PLAYERS.length} marcados · mostrando {list.length}
-              {profile.locked.length > 0 && <> · <b className="text-bolt">📌 {profile.locked.length} fijados</b></>}
+              {profile.locked.length > 0 && (
+                <>
+                  {" · "}
+                  <button onClick={() => setOnlyPinned(!onlyPinned)} className="font-bold text-bolt hover:underline" title="Salen obligatoriamente en todos los equipos generados. Pulsa para verlos.">
+                    📌 {profile.locked.length} fijados
+                  </button>
+                </>
+              )}
             </span>
             <button className="ml-auto hover:text-text" onClick={() => setMany(list.map((p) => p.id), true)}>Marcar los mostrados</button>
             <button className="hover:text-text" onClick={() => setMany(list.map((p) => p.id), false)}>Desmarcar</button>
@@ -126,6 +139,11 @@ export default function RosterPage() {
                       <div className="truncate text-[11px] text-muted">{p.team}</div>
                     </div>
                     <span className={`absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full text-xs font-black ${on ? "bg-bolt text-bolt-ink" : "border border-line text-transparent"}`}>✓</span>
+                    {locked.has(p.id) && (
+                      <span className="absolute right-7 top-1 rounded-full bg-bolt px-1 text-xs" title="Fijado: sale en todos los equipos generados">
+                        📌
+                      </span>
+                    )}
                   </button>
                   {on && (
                     <label className="flex items-center gap-1 border-t border-line/70 px-2 py-1 text-[11px] text-muted" title="Rango de despertar: sube las pasivas de despertar (TP+ en Advanced/Top/Legendary, pasiva única en Advanced+/Top+/Legendary+)">
