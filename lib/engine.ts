@@ -115,6 +115,8 @@ export interface Prefs {
   eventTrust: number;
   /** Penaliza fuerte los equipos sin la formación activa */
   requireFormation: boolean;
+  /** Multiplicador de las pasivas que debilitan al rival (1 = normal) */
+  debuffTrust?: number;
 }
 
 export const DEFAULT_PREFS: Prefs = { attack: 40, defense: 30, dribble: 15, block: 15, keeper: 50, eventTrust: 1, requireFormation: false };
@@ -125,6 +127,8 @@ export const PRESETS: { id: string; label: string; hint: string; prefs: Prefs }[
   { id: "muro", label: "Muro", hint: "Portería por encima de todo (en el meta suele bastar con 1-0)", prefs: { ...DEFAULT_PREFS, attack: 30, defense: 50, dribble: 5, block: 15, keeper: 65 } },
   { id: "portero", label: "Portero fuerte", hint: "Un portero con muchísimo poder propio (bruto o con sus pasivas, tipo Kino Aki), sin fiarlo todo a los bloqueos", prefs: { ...DEFAULT_PREFS, attack: 35, defense: 45, dribble: 10, block: 10, keeper: 90 } },
   { id: "control", label: "Control del medio", hint: "Ganar regates y robos", prefs: { ...DEFAULT_PREFS, attack: 30, defense: 20, dribble: 25, block: 25 } },
+  { id: "debuff", label: "Debilitar al rival", hint: "Equipos que hunden al rival: bajan la Parada de su portero, el Bloqueo de su defensa o la Técnica de su medio (Caos, Géminis, Otonashi, Manga Hou…)", prefs: { ...DEFAULT_PREFS, debuffTrust: 1.8 } },
+  { id: "acumular", label: "Acumulación", hint: "Confía en que tu equipo carga sus pasivas «cada vez que…» durante el partido (Hitomiko, Nikaidou, Endou Daisuke, Inazuma Japan)", prefs: { ...DEFAULT_PREFS, eventTrust: 1.4 } },
   { id: "seguro", label: "Potencia bruta", hint: "Solo lo que está garantizado: pasivas fijas y estadísticas, sin contar acumulaciones", prefs: { ...DEFAULT_PREFS, eventTrust: 0.25 } },
 ];
 
@@ -462,7 +466,7 @@ export function evaluate(lineup: Lineup, opts: EvalOptions = DEFAULT_OPTIONS): E
   const links: { from: string; to: MemberCalc; e: Effect; w: number }[] = [];
   let source = "";
   const apply = (e: Effect, owner: MemberCalc | null, weight: number): string[] => {
-    const w = e.value * weight;
+    const w = e.value * weight * (e.side === "rival" ? (prefs.debuffTrust ?? 1) : 1);
     if (e.side === "rival") {
       const elemFactor = e.filter?.elements ? 0.25 : 1;
       const roles = new Set<Role>();

@@ -23,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </Link>
             <div className="-mx-1 flex max-w-full gap-1 overflow-x-auto whitespace-nowrap px-1 text-sm font-semibold sm:ml-auto">
               <Link className="rounded-md px-3 py-1.5 hover:bg-panel-2" href="/">Mi plantilla</Link>
+              <Link className="rounded-md px-3 py-1.5 hover:bg-panel-2" href="/top">Equipos top</Link>
               <Link className="rounded-md px-3 py-1.5 hover:bg-panel-2" href="/jugadores">Jugadores</Link>
               <Link className="rounded-md px-3 py-1.5 hover:bg-panel-2" href="/editor">Editor</Link>
               <Link className="rounded-md px-3 py-1.5 hover:bg-panel-2" href="/metodo">Cómo calculamos</Link>

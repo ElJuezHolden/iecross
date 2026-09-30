@@ -24,7 +24,12 @@ function Slider({ label, hint, value, min, max, step = 1, format, onChange }: {
   );
 }
 
-const same = (a: Prefs, b: Prefs) => (Object.keys(a) as (keyof Prefs)[]).every((k) => a[k] === b[k]);
+const norm = (p: Prefs) => ({ ...p, debuffTrust: p.debuffTrust ?? 1 });
+const same = (a: Prefs, b: Prefs) => {
+  const x = norm(a);
+  const y = norm(b);
+  return (Object.keys(x) as (keyof Prefs)[]).every((k) => x[k] === y[k]);
+};
 
 export function PrefsPanel({ prefs, onChange }: { prefs: Prefs; onChange: (p: Prefs) => void }) {
   const [open, setOpen] = useState(false);
@@ -84,6 +89,16 @@ export function PrefsPanel({ prefs, onChange }: { prefs: Prefs; onChange: (p: Pr
               step={0.05}
               format={(v) => (v === 0 ? "No contar" : v < 0.6 ? `Poca (×${v.toFixed(2)})` : v <= 1.05 ? `Normal (×${v.toFixed(2)})` : `Optimista (×${v.toFixed(2)})`)}
               onChange={(v) => set({ eventTrust: v })}
+            />
+            <Slider
+              label="Peso de debilitar al rival"
+              hint="Pasivas que bajan la Parada del portero rival, el Bloqueo de su defensa o la Técnica de su medio (Caos, Géminis…). Súbelo para priorizar equipos que hunden al rival."
+              value={prefs.debuffTrust ?? 1}
+              min={0}
+              max={2.5}
+              step={0.1}
+              format={(v) => (v === 0 ? "No contar" : v < 0.8 ? `Poco (×${v.toFixed(1)})` : v <= 1.2 ? `Normal (×${v.toFixed(1)})` : `Mucho (×${v.toFixed(1)})`)}
+              onChange={(v) => set({ debuffTrust: v })}
             />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={prefs.requireFormation} onChange={(e) => set({ requireFormation: e.target.checked })} />
