@@ -1,22 +1,22 @@
 {
   "shot": {
-    "stat": 19910,
-    "power": 602,
+    "stat": 21813,
+    "power": 611,
     "mult": 1.214
   },
   "catch": {
-    "stat": 16311,
-    "power": 527,
+    "stat": 11770,
+    "power": 336,
     "mult": 1.224
   },
   "dribble": {
-    "stat": 7444,
-    "power": 284,
-    "mult": 1.273
+    "stat": 7330,
+    "power": 303,
+    "mult": 1.211
   },
   "block": {
-    "stat": 9082,
-    "power": 393,
-    "mult": 1.24
+    "stat": null,
+    "power": null,
+    "mult": null
   }
 }
