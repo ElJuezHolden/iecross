@@ -1,13 +1,13 @@
 {
   "shot": {
-    "stat": 18449,
-    "power": 646,
-    "mult": 1.218
+    "stat": 17837,
+    "power": 640,
+    "mult": 1.219
   },
   "catch": {
-    "stat": 8546,
-    "power": 243,
-    "mult": 1.235
+    "stat": 11080,
+    "power": 314,
+    "mult": 1.226
   },
   "dribble": {
     "stat": null,
